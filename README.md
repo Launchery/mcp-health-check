@@ -1,8 +1,8 @@
 # mcp-health-check
 
-> CLI utility to health-check MCP servers. Verify initialize, list tools, test calls — in seconds.
+> CLI utility to health-check MCP servers. Verify initialize, list tools, resources, prompts, and test calls — in seconds.
 
-**Problem:** You built an MCP server. Does it actually work? This tool spawns your server, runs the MCP handshake, lists tools and resources, and optionally calls a tool — all in one command.
+**Problem:** You built an MCP server. Does it actually work? This tool spawns your server, runs the MCP handshake, lists tools, resources, and prompts, and optionally calls tools — all in one command.
 
 **Who is this for:** Developers building or debugging MCP servers who need a quick sanity check.
 
@@ -18,22 +18,28 @@ mcp-health-check node dist/index.js
 # With tool test call
 mcp-health-check node dist/index.js --test echo
 
+# Multiple tool tests + verbose
+mcp-health-check node dist/index.js --test echo --test add --verbose
+
 # JSON output
 mcp-health-check node dist/index.js --json
+
+# Custom timeout
+mcp-health-check python server.py --timeout 30000
 ```
 
 ## Example Output
 
 ```
-🔍 MCP Health Check Results
+🔍 MCP Health Check
 
-  ✅ initialize: Server initialized successfully
-     {"name":"my-server","version":"1.0.0"}
-  ✅ tools/list: Found 3 tool(s)
-     [{"name":"echo"},{"name":"add"},{"name":"search"}]
-  ⚠️ resources/list: No resources registered
+  ✅ initialize       Server initialized successfully (234ms)
+     {"name":"my-server","version":"1.0.0","capabilities":["tools"]}
+  ✅ tools/list       Found 3 tool(s) (45ms)
+  ✅ resources/list   Found 2 resource(s) (12ms)
+  ✅ call: echo       Tool call succeeded (89ms)
 
-  2/3 checks passed
+  4 passed · 4 total
 ```
 
 ## What It Checks
@@ -43,19 +49,22 @@ mcp-health-check node dist/index.js --json
 | `initialize` | MCP handshake — server responds to protocol init |
 | `tools/list` | Server exposes tools |
 | `resources/list` | Server exposes resources (optional) |
-| `tool call` | Optional: call a specific tool with empty args |
+| `prompts/list` | Server exposes prompts (optional) |
+| `call: <tool>` | Optional: call a specific tool with empty args |
 
 ## Usage
 
 ```
-mcp-health-check <command> [args...] [--test <tool-name>] [--json]
+mcp-health-check <command> [args...] [options]
 ```
 
 | Flag | Description |
 |------|-------------|
-| `--test <tool>` | Call a tool after initialization |
+| `--test <tool>` | Call a tool after initialization (repeatable) |
+| `--timeout <ms>` | Timeout per operation in ms (default: 10000) |
+| `--verbose`, `-v` | Show full responses and tool schemas |
 | `--json` | Output results as JSON |
-| `--help` | Show help |
+| `--help`, `-h` | Show help |
 
 ## As a Dev Dependency
 
@@ -70,6 +79,10 @@ npm install --save-dev mcp-health-check
   }
 }
 ```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)
 
 ## Roadmap
 
